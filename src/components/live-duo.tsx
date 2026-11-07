@@ -261,10 +261,10 @@ export function LiveDuo() {
             <div className="hd">
               <strong>Live {slot.n}</strong>
               <span className="st">
-                Watching <b className="w">{slot.watching}</b>
+                W <b className="w">{slot.watching}</b>
               </span>
               <span className="st">
-                Likes <b className="l">{slot.likes}</b>
+                L <b className="l">{slot.likes}</b>
               </span>
               <em className="ttl">{slot.title}</em>
             </div>
