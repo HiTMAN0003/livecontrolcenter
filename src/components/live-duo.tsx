@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Slot = {
   n: 1 | 2;
@@ -72,9 +72,17 @@ export function LiveDuo() {
   const [keyDraft, setKeyDraft] = useState("");
   const [message, setMessage] = useState("");
   const [visibleSlots, setVisibleSlots] = useState([true, true]);
+  const [menuPosition, setMenuPosition] = useState<{ left: number; top: number } | null>(null);
+  const menuDrag = useRef<{ pointerId: number; startX: number; startY: number; offsetX: number; offsetY: number; moved: boolean } | null>(null);
+  const suppressMenuClick = useRef(false);
   const [slots, setSlots] = useState<Slot[]>([blank(1), blank(2)]);
 
   useEffect(() => {
+    const left = Number(readStorage("menu-left"));
+    const top = Number(readStorage("menu-top"));
+    if (Number.isFinite(left) && Number.isFinite(top) && readStorage("menu-left") !== null) {
+      setMenuPosition({ left: Math.max(0, Math.min(left, window.innerWidth - 90)), top: Math.max(0, Math.min(top, window.innerHeight - 48)) });
+    }
     const next = ([1, 2] as const).map((n) => {
       const slot = blank(n);
       slot.id = readStorage(`v${n}`);
@@ -193,7 +201,43 @@ export function LiveDuo() {
         type="button"
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
-        onClick={() => setOpen((current) => !current)}
+        title="Drag to move menu"
+        style={menuPosition ? { left: menuPosition.left, top: menuPosition.top, right: "auto" } : undefined}
+        onPointerDown={(event) => {
+          if (event.button !== 0) return;
+          const rect = event.currentTarget.getBoundingClientRect();
+          menuDrag.current = { pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, offsetX: event.clientX - rect.left, offsetY: event.clientY - rect.top, moved: false };
+          suppressMenuClick.current = false;
+          event.currentTarget.setPointerCapture(event.pointerId);
+          setMenuPosition({ left: rect.left, top: rect.top });
+        }}
+        onPointerMove={(event) => {
+          const drag = menuDrag.current;
+          if (!drag || drag.pointerId !== event.pointerId) return;
+          if (Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) > 4) drag.moved = true;
+          if (!drag.moved) return;
+          const left = Math.max(0, Math.min(event.clientX - drag.offsetX, window.innerWidth - event.currentTarget.offsetWidth));
+          const top = Math.max(0, Math.min(event.clientY - drag.offsetY, window.innerHeight - event.currentTarget.offsetHeight));
+          setMenuPosition({ left, top });
+        }}
+        onPointerUp={(event) => {
+          const drag = menuDrag.current;
+          if (!drag || drag.pointerId !== event.pointerId) return;
+          if (drag.moved) {
+            const left = Math.max(0, Math.min(event.clientX - drag.offsetX, window.innerWidth - event.currentTarget.offsetWidth));
+            const top = Math.max(0, Math.min(event.clientY - drag.offsetY, window.innerHeight - event.currentTarget.offsetHeight));
+            setMenuPosition({ left, top });
+            writeStorage("menu-left", String(left));
+            writeStorage("menu-top", String(top));
+            suppressMenuClick.current = true;
+          }
+          menuDrag.current = null;
+        }}
+        onPointerCancel={() => { menuDrag.current = null; }}
+        onClick={() => {
+          if (suppressMenuClick.current) { suppressMenuClick.current = false; return; }
+          setOpen((current) => !current);
+        }}
       >
         {open ? "× Close" : "☰ Menu"}
       </button>
