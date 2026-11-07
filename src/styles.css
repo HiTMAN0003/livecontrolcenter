@@ -285,3 +285,5 @@
 }
 
 @media(prefers-reduced-motion:reduce){.live-duo #side{transition:none}} .live-duo #grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:minmax(0,1fr);gap:clamp(6px,.8vw,12px);padding:clamp(6px,.8vw,12px)} .live-duo #grid>.pane>.chat{display:flex;flex:1;min-height:0} .live-duo .pane.live-1{box-shadow:inset 0 3px 0 var(--view),0 0 0 1px rgba(255,255,255,.06)} .live-duo .pane.live-2{box-shadow:inset 0 3px 0 var(--like),0 0 0 1px rgba(255,255,255,.06)} @media(max-width:800px),(orientation:portrait){.live-duo #grid{grid-template-columns:minmax(0,1fr);grid-template-rows:repeat(2,minmax(0,1fr))}} .live-duo.single #grid{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)} .live-duo.single .pane:first-child .hd{padding-left:104px}
+
+.live-duo #menu{touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}.live-duo #menu:active{cursor:grabbing}
