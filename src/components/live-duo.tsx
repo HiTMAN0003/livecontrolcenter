@@ -71,7 +71,8 @@ export function LiveDuo() {
   const [apiKey, setApiKey] = useState("");
   const [keyDraft, setKeyDraft] = useState("");
   const [message, setMessage] = useState("");
-  const [activeChat, setActiveChat] = useState<1 | 2>(1); const [slots, setSlots] = useState<Slot[]>([blank(1), blank(2)]);
+  const [visibleSlots, setVisibleSlots] = useState([true, true]);
+  const [slots, setSlots] = useState<Slot[]>([blank(1), blank(2)]);
 
   useEffect(() => {
     const next = ([1, 2] as const).map((n) => {
@@ -82,6 +83,7 @@ export function LiveDuo() {
     });
     const savedKey = readStorage("ytkey") || "";
     setSlots(next);
+    setVisibleSlots(([1, 2] as const).map((n) => readStorage(`p${n}`) !== "0"));
     setApiKey(savedKey);
     setKeyDraft(savedKey);
     setHost(window.location.hostname);
@@ -163,6 +165,12 @@ export function LiveDuo() {
     setOpen(false);
   }
 
+  function togglePanel(index: number, show: boolean) {
+    if (!show && visibleSlots.filter(Boolean).length === 1) return;
+    writeStorage(`p${index + 1}`, show ? "1" : "0");
+    setVisibleSlots((current) => current.map((visible, i) => (i === index ? show : visible)));
+  }
+
   function toggleVideo(index: number, show: boolean) {
     writeStorage(`h${index + 1}`, show ? "1" : "0");
     setSlots((current) => current.map((slot, i) => (i === index ? { ...slot, showVideo: show } : slot)));
@@ -179,7 +187,7 @@ export function LiveDuo() {
   }
 
   return (
-    <div className={`live-duo${open ? " open" : ""}`}>
+    <div className={`live-duo${open ? " open" : ""}${visibleSlots.filter(Boolean).length === 1 ? " single" : ""}`}>
       <button
         id="menu"
         type="button"
@@ -228,6 +236,10 @@ export function LiveDuo() {
               />
               Show video
             </label>
+            <label className="chk">
+              <input type="checkbox" checked={visibleSlots[index]} disabled={visibleSlots[index] && visibleSlots.filter(Boolean).length === 1} onChange={(event) => togglePanel(index, event.target.checked)} />
+              Show Live {slot.n} panel
+            </label>
           </section>
         ))}
 
@@ -256,8 +268,8 @@ export function LiveDuo() {
       </aside>
 
       <main id="grid">
-        {slots.map((slot) => (
-          <section className={`pane${slot.showVideo ? "" : " novid"}`} key={slot.n}>
+        {slots.filter((_, index) => visibleSlots[index]).map((slot) => (
+          <section className={`pane live-${slot.n}${slot.showVideo ? "" : " novid"}`} key={slot.n}>
             <div className="hd">
               <strong>Live {slot.n}</strong>
               <span className="st">
@@ -294,7 +306,7 @@ export function LiveDuo() {
             </div>
           </section>
         ))}
-<section id="chat-panel" className="pane chat-panel"><div className="chat-hd"><strong>Live chat</strong>{([1,2] as const).map(n=><button key={n} type="button" aria-pressed={activeChat===n} onClick={()=>setActiveChat(n)}>Live {n}</button>)}</div><div className="chat-stack">{slots[activeChat-1].id&&host?<iframe src={"https://www.youtube.com/live_chat?v="+slots[activeChat-1].id+"&embed_domain="+encodeURIComponent(host)+"&dark_theme=1"} title={"Live "+activeChat+" chat"}/>:<div className="empty">Open the menu and paste a link for Live {activeChat}</div>}</div></section></main>
+</main>
     </div>
   );
 }
