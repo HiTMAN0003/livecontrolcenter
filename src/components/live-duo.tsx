@@ -183,11 +183,11 @@ export function LiveDuo() {
       <button
         id="menu"
         type="button"
-        aria-label="Open menu"
+        aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
-        onClick={() => setOpen(true)}
+        onClick={() => setOpen((current) => !current)}
       >
-        ☰ Menu
+        {open ? "× Close" : "☰ Menu"}
       </button>
       <div id="scrim" onClick={() => setOpen(false)} />
 
