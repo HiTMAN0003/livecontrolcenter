@@ -20,7 +20,7 @@
     var(--bg);
   color: var(--tx);
   font: 15px/1.45 Inter, ui-sans-serif, system-ui, sans-serif;
-  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  padding: 0 0 env(safe-area-inset-bottom);
 }
 
 .live-duo button,
