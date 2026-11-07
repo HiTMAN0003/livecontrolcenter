@@ -71,7 +71,7 @@ export function LiveDuo() {
   const [apiKey, setApiKey] = useState("");
   const [keyDraft, setKeyDraft] = useState("");
   const [message, setMessage] = useState("");
-  const [slots, setSlots] = useState<Slot[]>([blank(1), blank(2)]);
+  const [activeChat, setActiveChat] = useState<1 | 2>(1); const [slots, setSlots] = useState<Slot[]>([blank(1), blank(2)]);
 
   useEffect(() => {
     const next = ([1, 2] as const).map((n) => {
@@ -294,7 +294,7 @@ export function LiveDuo() {
             </div>
           </section>
         ))}
-      </main>
+<section id="chat-panel" className="pane chat-panel"><div className="chat-hd"><strong>Live chat</strong>{([1,2] as const).map(n=><button key={n} type="button" aria-pressed={activeChat===n} onClick={()=>setActiveChat(n)}>Live {n}</button>)}</div><div className="chat-stack">{slots[activeChat-1].id&&host?<iframe src={"https://www.youtube.com/live_chat?v="+slots[activeChat-1].id+"&embed_domain="+encodeURIComponent(host)+"&dark_theme=1"} title={"Live "+activeChat+" chat"}/>:<div className="empty">Open the menu and paste a link for Live {activeChat}</div>}</div></section></main>
     </div>
   );
 }
